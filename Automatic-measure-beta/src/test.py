@@ -5,10 +5,12 @@ Created on Wed Mar 08 15:39:59 2017
 @author: isir
 """
 from sklearn.decomposition import PCA
+from sklearn import svm
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from multiprocessing import Pool
 from sklearn import preprocessing
+from sklearn.model_selection import GridSearchCV
 from sklearn import metrics
 from time import time
 
@@ -86,17 +88,16 @@ def k_means_predict(data,K,ini='k-means++'):
     t0 = time()
     kmean= KMeans(init=ini, n_clusters=K, n_init=10) 
     kmean.fit(data)
-    kmean.predict(data)
     t=time()
-    print(t-t0)
-    print(metrics.silhouette_score(data, kmean.labels_,metric='euclidean'))
+    print("training  time for kmeans------:"+str(t-t0))
+    print("silhouette ------:"+str(metrics.silhouette_score(data, kmean.labels_,metric='euclidean')))
     return kmean
 
     
 # class var 
 kmean=k_means_predict(hoghofPCA,256)
   
-  
+kmean.get_params()  
   
   
 ##############################generate training test cross validation data for one SVM ###########################################
@@ -118,12 +119,57 @@ kmean=k_means_predict(hoghofPCA,256)
      return train
          
  #104 is ncomponent and 256 is ncluster K
- d2=histograms(data2,104,256)
- d1=histograms(data1,104,256)     
+ h2=histograms(data2,104,256)
+ h1=histograms(data1,104,256)     
      
     
     
 #######################################Training one SVM ##########################################################################
+
+def my_kernel(X,Y):
+    
+    return X.dot(Y.T)
+
+
+def OneSVM_predict(h,my_kernel):
+    t0 = time()
+    onesvm = svm.OneClassSVM( kernel=my_kernel)
+    onesvm.fit(h1)
+    t=time()
+    print("training time for svm----------: "+str(t-t0))
+    return onesvm
+
+#svm1=OneSVM_predict(h1,my_kernel)
+#svm2=OneSVM_predict(h2,my_kernel)
+#svm2.predict(h1)
+
+#h1 and h2
+
+def SAB(h1,h2,i,j):
+    svm1=OneSVM_predict(h1,my_kernel)
+    svm2=OneSVM_predict(h2,my_kernel)
+    Sab1=svm1.decision_function(h2)
+    Sab2=svm2.decision_function(h1)
+    return Sab1[i]+Sab2[j]
+
+
+SAB(h1,h2,4,4)
+
+def recurrence_matrix(h1,h2,threshold,i,j):
+    
+    return np.where(threshold-SAB(h1,h2,i,j) > 0 ,1, 0)
+    
+    
+recurrence_matrix(h1,h2,5,4,4)
+
+
+    
+
+
+    
+    
+
+    
 
 
    
