@@ -51,6 +51,13 @@ class Imitation:
         
         
     def applypca(data,ncp=None):
+        """
+        input:
+            -data: hoghof descriptors
+        output:
+            - principal component with variance 99%
+        description: Dimension reduction with 99% of variance  
+        """
         pca = PCA(n_components=162)
         X = pca.fit_transform(data)
 
@@ -68,7 +75,45 @@ class Imitation:
             ncomponent=ncp
         
     
-        return X[:,0:ncomponent],ncomponent    
+        return X[:,0:ncomponent],ncomponent 
+    
+    
+    def histograms(data,ncomponent,K):
+        """
+        -input:
+            -data: hoghof descriptor
+            -number of principal component (comes from applying pca) 
+            -K: number of words in the codebook or the codewords or visual vocabulary or K means number of clusters
+        """
+        i=0
+        gbp=data
+        predclust=kmean.predict(applypca(preprocessing.scale((data.drop(['frame'],axis=1))),ncomponent)[0])
+        gbp['pred']=predclust
+        gbp=gbp.groupby('frame')
+        train=np.zeros((len(gbp),K))
+        for name,group in gbp:
+           train[i][group.pred.values]=1
+           print(train[i])
+           i+=1
+         
+        return train
+    
+    
+    def k_means_predict(data,K,ini='k-means++'):
+        """
+        input:
+            -data: hoghf descriptor
+        output:
+            -Kmean classifier
+        descrition: apply Kmeans
+        """
+        t0 = time()
+        kmean= KMeans(init=ini, n_clusters=K, n_init=10) 
+        kmean.fit(data)
+        t=time()
+        print("training  time for kmeans------:"+str(t-t0))
+        print("silhouette ------:"+str(metrics.silhouette_score(data, kmean.labels_,metric='euclidean')))
+        return kmean
 
 
     def load_process_data(self):
@@ -117,6 +162,8 @@ class Imitation:
             
         return data1,data2,hoghof
     
+    
+ 
     
     
     
