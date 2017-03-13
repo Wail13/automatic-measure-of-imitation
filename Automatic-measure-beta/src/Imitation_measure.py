@@ -31,13 +31,15 @@ class Imitation:
 #    im=Imitation("walk-simple","walk-complex",256,'C:\\Wail')  im.load_process_data()
     
     
-    def __init__(self,vid1Name,vid2Name,K,projectPath,windowsize=1,skip=1,scale=1):
+    def __init__(self,vid1Name,vid2Name,K,projectPath,windowsize=1,skip=1,scale=1,pca=1):
         """
-        vid1Name: the name of the video located in the Data folder
-        K: number of words in the codebook or the codewords or visual vocabulary or K means number of clusters
-        projectPath: Where the project is located in your computer example "C:\\Wail"
-        windowsize: number of frames for each training vector  example of 2 frame : vect[1,2]--vect[3,4]--vect[5,6]
-        skip: skip generating STIP points if they are allready generated
+        -init:
+            vid1Name: the name of the video located in the Data folder
+            K: number of words in the codebook or the codewords or visual vocabulary or K means number of clusters
+            projectPath: Where the project is located in your computer example "C:\\Wail"
+            windowsize: number of frames for each training vector  example of 2 frame : vect[1,2]--vect[3,4]--vect[5,6]
+            skip: skip generating STIP points if they are allready generated
+            pca: apply PCA or not
         """
         
         self.vid1Name=vid1Name
@@ -47,6 +49,27 @@ class Imitation:
         self.projectPath=projectPath
         self.skip=skip
         self.scale=scale
+        self.pca=pca
+        
+        
+    def compute(self):
+        data1,data2,hoghof=self.load_process_data()
+        
+      
+        hoghof,ncomponent=self.applypca(hoghof)
+            
+        kmean=self.k_means_predict(hoghof,self.K)
+        h2=self.histograms(data2,ncomponent,self.K)
+        h1=self.histograms(data1,ncomponent,self.K) 
+        print(h1)
+        print(h2)
+        
+
+            
+        
+            
+        
+        
         
         
         
@@ -73,6 +96,8 @@ class Imitation:
         
         if ncp:
             ncomponent=ncp
+            
+        print("######## Done applying PCA###############")
         
     
         return X[:,0:ncomponent],ncomponent 
@@ -95,6 +120,8 @@ class Imitation:
            train[i][group.pred.values]=1
            print(train[i])
            i+=1
+           
+        print("######### Generating histograms ###############")
          
         return train
     
@@ -114,6 +141,37 @@ class Imitation:
         print("training  time for kmeans------:"+str(t-t0))
         print("silhouette ------:"+str(metrics.silhouette_score(data, kmean.labels_,metric='euclidean')))
         return kmean
+    
+    
+    def my_kernel(X,Y):
+    
+        return X.dot(Y.T)
+    
+    
+    def OneSVM_predict(h,my_kernel):
+        t0 = time()
+        onesvm = svm.OneClassSVM( kernel=my_kernel)
+        onesvm.fit(h1)
+        t=time()
+        print("training time for svm----------: "+str(t-t0))
+        return onesvm
+    
+    
+    
+    def SAB(h1,h2,i,j):
+        svm1=OneSVM_predict(h1,my_kernel)
+        svm2=OneSVM_predict(h2,my_kernel)
+        Sab1=svm1.decision_function(h2)
+        Sab2=svm2.decision_function(h1)
+        return Sab1[i]+Sab2[j]
+    
+    
+    
+    def recurrence_matrix(h1,h2,threshold,i,j):
+    
+        return np.where(threshold-SAB(h1,h2,i,j) > 0 ,1, 0)
+
+
 
 
     def load_process_data(self):
@@ -123,6 +181,8 @@ class Imitation:
             -data2: dataframe for the second video 'STIP' points
             -hoghof: descriptor of both videos. We used a combination of  histogram of gradients and histogram of flow 
         """
+        
+        print("################ loading data ######################")
         
         pathVid1="\\Automatic-measure-beta\\Data\\"+self.vid1Name+".avi"
         pathVid2="\\Automatic-measure-beta\\Data\\"+self.vid2Name+".avi"
@@ -159,6 +219,9 @@ class Imitation:
         else:
             #dataframe to numpy without scaling to be usable in sklearn
             hoghof=datapca.as_matrix(columns=None)
+            
+        print("############ loading data completed ###########################")
+        print(hoghof)
             
         return data1,data2,hoghof
     
