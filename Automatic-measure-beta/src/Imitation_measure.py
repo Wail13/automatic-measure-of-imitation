@@ -186,9 +186,11 @@ class Imitation:
         svm2=self.OneSVM_predict(h2,self.my_kernel)
         print("intercept 1---"+str(svm1.intercept_))
         print("intercept 2---"+str(svm2.intercept_))
-
-        Sab1=svm1.decision_function(h2)
-        Sab2=svm2.decision_function(h1)
+##
+#        Sab1=svm1.decision_function(h2)
+#        Sab2=svm2.decision_function(h1)
+        Sab1=svm1.decision_function(h2)+svm1.intercept_
+        Sab2=svm2.decision_function(h1)+svm2.intercept_
         return Sab1,Sab2
     
     
@@ -202,8 +204,9 @@ class Imitation:
         
         for i in range(h1.shape[0]):
             for j in range(h2.shape[0]):
-                print(threshold-np.abs((sab1[j]+sab2[i])))
-                Rij[i][j]=np.where( (threshold-np.abs((sab1[j]+sab2[i]))) >0, 1, 0 )
+                print((sab1[j]+sab2[i])-threshold)
+                Rij[i][j]=np.where( (sab1[j]+sab2[i])-threshold >0, 1, 0 )
+#                Rij[i][j]=np.where( (threshold-np.abs((sab1[j]+sab2[i]))) >0, 1, 0 )
             
         print(np.mean(Rij))
     
@@ -269,7 +272,7 @@ class Imitation:
     
     
 
-im=Imitation("boxing02","boxing3",256,'C:\\Wail\\automatic-measure-of-imitation',skip=0,threshold=2)
+im=Imitation("boxing02","boxing02",256,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=0)
 im.compute()      
      
         
