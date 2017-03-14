@@ -5,7 +5,9 @@ Created on Mon Mar 13 17:04:13 2017
 @author: isir
 """
 
+    
 class Imitation:
+    
     from sklearn.decomposition import PCA
     from sklearn import svm
     import matplotlib.pyplot as plt
@@ -19,6 +21,8 @@ class Imitation:
     import pandas as pd
     import sys, os
     
+
+    
     #Class variables 
      #STIP: Space-Time Interest Points detection
     pathSTIP="\\Automatic-measure-beta\\util\\cvml10-actions\\cvml10-actions\\stip\\bin\\stipdet.exe "
@@ -27,9 +31,10 @@ class Imitation:
     pathout2="\\Automatic-measure-beta\\Data\\vid-gen2\\"
 
 
-    
-#    im=Imitation("walk-simple","walk-complex",256,'C:\\Wail')  im.load_process_data()
-    
+#    
+#    im=Imitation("walk-complex","walk-simple",256,'C:\\Wail\\automatic-measure-of-imitation',skip=1)
+#    im.compute()
+#    
     
     def __init__(self,vid1Name,vid2Name,K,projectPath,windowsize=1,skip=1,scale=1,pca=1):
         """
@@ -59,10 +64,21 @@ class Imitation:
         hoghof,ncomponent=self.applypca(hoghof)
             
         kmean=self.k_means_predict(hoghof,self.K)
-        h2=self.histograms(data2,ncomponent,self.K)
-        h1=self.histograms(data1,ncomponent,self.K) 
-        print(h1)
+        h2=self.histograms(data2,ncomponent,self.K,kmean)
+        print("########### h2 #########################")
         print(h2)
+        print("########## done h2 ###################")
+        
+        print("########### h1 #########################")
+        h1=self.histograms(data1,ncomponent,self.K,kmean)
+        print(h1)
+        print("########## done h1 ###################")
+        
+        print("########### One Class SVM ################ ")
+        
+
+       
+       
         
 
             
@@ -73,7 +89,7 @@ class Imitation:
         
         
         
-    def applypca(data,ncp=None):
+    def applypca(self,data,ncp=None):
         """
         input:
             -data: hoghof descriptors
@@ -89,7 +105,6 @@ class Imitation:
 
         for i in range(len(expvar)+1):
             if sum(expvar[:i]) > 99:
-                print i
                 var= sum(expvar[:i])
                 ncomponent=i
                 break
@@ -98,12 +113,13 @@ class Imitation:
             ncomponent=ncp
             
         print("######## Done applying PCA###############")
+        print("Number of pc is:  "+str(ncomponent))
         
     
         return X[:,0:ncomponent],ncomponent 
     
     
-    def histograms(data,ncomponent,K):
+    def histograms(self,data,ncomponent,K,kmean):
         """
         -input:
             -data: hoghof descriptor
@@ -112,13 +128,13 @@ class Imitation:
         """
         i=0
         gbp=data
-        predclust=kmean.predict(applypca(preprocessing.scale((data.drop(['frame'],axis=1))),ncomponent)[0])
+        predclust=kmean.predict(self.applypca(preprocessing.scale((data.drop(['frame'],axis=1))),ncomponent)[0])
         gbp['pred']=predclust
         gbp=gbp.groupby('frame')
         train=np.zeros((len(gbp),K))
         for name,group in gbp:
            train[i][group.pred.values]=1
-           print(train[i])
+           #print(train[i])
            i+=1
            
         print("######### Generating histograms ###############")
@@ -126,7 +142,7 @@ class Imitation:
         return train
     
     
-    def k_means_predict(data,K,ini='k-means++'):
+    def k_means_predict(self,data,K,ini='k-means++'):
         """
         input:
             -data: hoghf descriptor
@@ -143,12 +159,12 @@ class Imitation:
         return kmean
     
     
-    def my_kernel(X,Y):
+    def my_kernel(self,X,Y):
     
         return X.dot(Y.T)
     
     
-    def OneSVM_predict(h,my_kernel):
+    def OneSVM_predict(self,h,my_kernel):
         t0 = time()
         onesvm = svm.OneClassSVM( kernel=my_kernel)
         onesvm.fit(h1)
@@ -158,7 +174,7 @@ class Imitation:
     
     
     
-    def SAB(h1,h2,i,j):
+    def SAB(self,h1,h2,i,j):
         svm1=OneSVM_predict(h1,my_kernel)
         svm2=OneSVM_predict(h2,my_kernel)
         Sab1=svm1.decision_function(h2)
@@ -167,7 +183,7 @@ class Imitation:
     
     
     
-    def recurrence_matrix(h1,h2,threshold,i,j):
+    def recurrence_matrix(self,h1,h2,threshold,i,j):
     
         return np.where(threshold-SAB(h1,h2,i,j) > 0 ,1, 0)
 
@@ -195,8 +211,8 @@ class Imitation:
             
         
         #loading the STIP into a panda dataframe
-        data1=pd.read_csv('../Data/vid-gen1/'+self.vid1Name+'.txt',header=None, sep=r"\s+",skiprows=3)
-        data2=pd.read_csv('../Data/vid-gen2/'+self.vid1Name+'.txt',header=None, sep=r"\s+",skiprows=3)
+        data1=pd.read_csv(self.projectPath+"\\Automatic-measure-beta\\Data\\vid-gen1\\"+self.vid1Name+".txt",header=None, sep=r"\s+",skiprows=3)
+        data2=pd.read_csv(self.projectPath+"\\Automatic-measure-beta\\Data\\vid-gen2\\"+self.vid2Name+".txt",header=None, sep=r"\s+",skiprows=3)
         
         #drop useless columns
         data1.drop(data1.columns[[0,1,2,3,5,6]], axis=1, inplace=True)
@@ -232,8 +248,7 @@ class Imitation:
     
 
             
-        
-        
+     
         
         
         
