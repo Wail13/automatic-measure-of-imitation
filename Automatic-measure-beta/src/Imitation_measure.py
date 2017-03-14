@@ -36,7 +36,7 @@ class Imitation:
 #    im.compute()
 #    
     
-    def __init__(self,vid1Name,vid2Name,K,projectPath,windowsize=1,skip=1,scale=1,pca=1):
+    def __init__(self,vid1Name,vid2Name,K,projectPath,windowsize=1,skip=1,scale=1,pca=1,threshold=0.1):
         """
         -init:
             vid1Name: the name of the video located in the Data folder
@@ -45,6 +45,7 @@ class Imitation:
             windowsize: number of frames for each training vector  example of 2 frame : vect[1,2]--vect[3,4]--vect[5,6]
             skip: skip generating STIP points if they are allready generated
             pca: apply PCA or not
+            threshold: Rij=heaviside(threshold-Sab) where Rij is the recurrence matrix
         """
         
         self.vid1Name=vid1Name
@@ -55,6 +56,7 @@ class Imitation:
         self.skip=skip
         self.scale=scale
         self.pca=pca
+        self.threshold=threshold
         
         
     def compute(self):
@@ -74,8 +76,10 @@ class Imitation:
         print(h1)
         print("########## done h1 ###################")
         
-        print("########### One Class SVM ################ ")
-        print(self.recurrence_matrix(self,h1,h2,0.1,0,0))
+        print("########### recurrence matrix is:   ################ ")
+        self.recurrence_matrix(h1,h2,self.threshold)
+        
+       
         
 
        
@@ -175,18 +179,30 @@ class Imitation:
     
     
     
-    def SAB(self,h1,h2,i,j):
+    def SAB(self,h1,h2):
         svm1=self.OneSVM_predict(h1,self.my_kernel)
         svm2=self.OneSVM_predict(h2,self.my_kernel)
         Sab1=svm1.decision_function(h2)
         Sab2=svm2.decision_function(h1)
-        return Sab1[i]+Sab2[j]
+        return Sab1,Sab2
     
     
     
-    def recurrence_matrix(self,h1,h2,threshold,i,j):
+    def recurrence_matrix(self,h1,h2,threshold):
+        sab1,sab2=self.SAB(h1,h2)
+        Rij=np.zeros((h1.shape[0],h2.shape[0]))
+        print((h1.shape[0],h2.shape[0]))
+        print(sab1.shape)
+        print(sab2.shape)
+        
+        for i in range(h1.shape[0]):
+            for j in range(h2.shape[0]):
+                print((sab1[j]+sab2[i]))
+                Rij[i][j]=np.where( (threshold-(sab1[j]+sab2[i]))>0,1,0 )
+            
+        print(Rij)
     
-        return np.where(threshold-SAB(h1,h2,i,j) > 0 ,1, 0)
+        return Rij
 
 
 
@@ -248,7 +264,8 @@ class Imitation:
     
     
 
-            
+     im=Imitation("walk-complex","walk-simple",256,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=10)
+     im.compute()      
      
         
         
