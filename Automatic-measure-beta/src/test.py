@@ -139,7 +139,7 @@ def OneSVM_predict(h,my_kernel):
     print("training time for svm----------: "+str(t-t0))
     return onesvm
 
-#svm1=OneSVM_predict(h1,my_kernel)
+svm1=OneSVM_predict(h1,my_kernel)
 #svm2=OneSVM_predict(h2,my_kernel)
 #svm2.predict(h1)
 
@@ -160,8 +160,8 @@ def recurrence_matrix(h1,h2,threshold,i,j):
     return np.where(threshold-SAB(h1,h2,i,j) > 0 ,1, 0)
     
     
-recurrence_matrix(h1,h2,5,4,4)
-
+onesvm = svm.OneClassSVM( kernel=my_kernel)
+onesvm.get_params()  
 
 
 

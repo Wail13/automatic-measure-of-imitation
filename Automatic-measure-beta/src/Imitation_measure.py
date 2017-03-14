@@ -182,8 +182,11 @@ class Imitation:
     def SAB(self,h1,h2):
         svm1=self.OneSVM_predict(h1,self.my_kernel)
         svm2=self.OneSVM_predict(h2,self.my_kernel)
-        Sab1=svm1.decision_function(h2)
-        Sab2=svm2.decision_function(h1)
+        print("intercept 1---"+str(svm1.intercept_))
+        print("intercept 2---"+str(svm2.intercept_))
+
+        Sab1=svm1.decision_function(h2)-svm1.intercept_
+        Sab2=svm2.decision_function(h1)-svm2.intercept_
         return Sab1,Sab2
     
     
