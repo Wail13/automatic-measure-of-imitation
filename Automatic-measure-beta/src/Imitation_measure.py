@@ -77,7 +77,9 @@ class Imitation:
         print("########## done h1 ###################")
         
         print("########### recurrence matrix is:   ################ ")
-        self.recurrence_matrix(h1,h2,self.threshold)
+        
+        
+        return self.recurrence_matrix(h1,h2,self.threshold)
         
        
         
@@ -185,8 +187,8 @@ class Imitation:
         print("intercept 1---"+str(svm1.intercept_))
         print("intercept 2---"+str(svm2.intercept_))
 
-        Sab1=svm1.decision_function(h2)-svm1.intercept_
-        Sab2=svm2.decision_function(h1)-svm2.intercept_
+        Sab1=svm1.decision_function(h2)
+        Sab2=svm2.decision_function(h1)
         return Sab1,Sab2
     
     
@@ -200,10 +202,10 @@ class Imitation:
         
         for i in range(h1.shape[0]):
             for j in range(h2.shape[0]):
-                print((sab1[j]+sab2[i]))
-                Rij[i][j]=np.where( (threshold-(sab1[j]+sab2[i]))>0,1,0 )
+                print(threshold-np.abs((sab1[j]+sab2[i])))
+                Rij[i][j]=np.where( (threshold-np.abs((sab1[j]+sab2[i]))) >0, 1, 0 )
             
-        print(Rij)
+        print(np.mean(Rij))
     
         return Rij
 
@@ -235,8 +237,8 @@ class Imitation:
         data2=pd.read_csv(self.projectPath+"\\Automatic-measure-beta\\Data\\vid-gen2\\"+self.vid2Name+".txt",header=None, sep=r"\s+",skiprows=3)
         
         #drop useless columns
-        data1.drop(data1.columns[[0,1,2,3,5,6]], axis=1, inplace=True)
-        data2.drop(data2.columns[[0,1,2,3,5,6]], axis=1, inplace=True)
+        data1.drop(data1.columns[[0,1,2,4,5,6]], axis=1, inplace=True)
+        data2.drop(data2.columns[[0,1,2,4,5,6]], axis=1, inplace=True)
         
         #columns names
         column=["hgf"+str(i) for i in range(162)]
@@ -267,8 +269,8 @@ class Imitation:
     
     
 
-     im=Imitation("walk-complex","walk-simple",256,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=10)
-     im.compute()      
+im=Imitation("boxing02","boxing3",256,'C:\\Wail\\automatic-measure-of-imitation',skip=0,threshold=2)
+im.compute()      
      
         
         
