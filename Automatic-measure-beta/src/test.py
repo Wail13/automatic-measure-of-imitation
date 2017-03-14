@@ -161,7 +161,9 @@ def recurrence_matrix(h1,h2,threshold,i,j):
     
     
 onesvm = svm.OneClassSVM( kernel=my_kernel)
-onesvm.get_params()  
+onesvm.fit(data1)
+onesvm.intercept_
+onesvm.
 
 
 
