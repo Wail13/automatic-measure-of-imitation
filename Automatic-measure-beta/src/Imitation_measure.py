@@ -75,6 +75,7 @@ class Imitation:
         print("########## done h1 ###################")
         
         print("########### One Class SVM ################ ")
+        print(self.recurrence_matrix(self,h1,h2,0.1,0,0))
         
 
        
@@ -167,7 +168,7 @@ class Imitation:
     def OneSVM_predict(self,h,my_kernel):
         t0 = time()
         onesvm = svm.OneClassSVM( kernel=my_kernel)
-        onesvm.fit(h1)
+        onesvm.fit(h)
         t=time()
         print("training time for svm----------: "+str(t-t0))
         return onesvm
@@ -175,8 +176,8 @@ class Imitation:
     
     
     def SAB(self,h1,h2,i,j):
-        svm1=OneSVM_predict(h1,my_kernel)
-        svm2=OneSVM_predict(h2,my_kernel)
+        svm1=self.OneSVM_predict(h1,self.my_kernel)
+        svm2=self.OneSVM_predict(h2,self.my_kernel)
         Sab1=svm1.decision_function(h2)
         Sab2=svm2.decision_function(h1)
         return Sab1[i]+Sab2[j]
