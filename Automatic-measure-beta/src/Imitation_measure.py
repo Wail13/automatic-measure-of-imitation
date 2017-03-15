@@ -62,7 +62,7 @@ class Imitation:
         
         
     def compute(self):
-        t0 = time()
+        
         data1,data2,hoghof=self.load_process_data()
         
       
@@ -81,21 +81,11 @@ class Imitation:
         
         print("########### recurrence matrix is:   ################ ")
         
-        t = time()
-        
-        print("Execution time is: "+str(t-t0))
+      
         
         return self.recurrence_matrix(h1,h2,self.threshold)
         
        
-        
-
-        
-            
-        
-        
-        
-        
         
     def applypca(self,data,ncp=None):
         """
@@ -174,7 +164,7 @@ class Imitation:
     
     def OneSVM_predict(self,h,my_kernel):
         t0 = time()
-        onesvm = svm.OneClassSVM( kernel=my_kernel,nu=0.1)
+        onesvm = svm.OneClassSVM( kernel=my_kernel,nu=0.5)
         onesvm.fit(h)
         t=time()
         print("training time for svm----------: "+str(t-t0))
@@ -187,9 +177,7 @@ class Imitation:
         svm2=self.OneSVM_predict(h2,self.my_kernel)
         print("intercept 1---"+str(svm1.intercept_))
         print("intercept 2---"+str(svm2.intercept_))
-##
-#        Sab1=svm1.decision_function(h2)
-#        Sab2=svm2.decision_function(h1)
+        
         Sab1=svm1.decision_function(h2)-svm1.intercept_
         Sab2=svm2.decision_function(h1)-svm2.intercept_
         return Sab1,Sab2
@@ -217,11 +205,7 @@ class Imitation:
                 print((sab1[j]+sab2[i])-threshold)
                 Rij[i][j]=np.where( (sab1[j]+sab2[i])-threshold >0, 1, 0 )
                 Dij[i][j]= (sab1[j]+sab2[i])
-
                 
-                
-#                Rij[i][j]=np.where( (threshold-np.abs((sab1[j]+sab2[i]))) >0, 1, 0 )
-            
         print(np.mean(Rij))
     
         return Rij,Dij
@@ -286,18 +270,20 @@ class Imitation:
     
     
 
-im=Imitation("boxing3","walk-simple",256,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=0.4)
-Rij,Dij=im.compute()  
+im=Imitation("walk-simple","boxing02",256,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=3)
+im.compute()  
 
-    means=[]
-    for i in np.linspace(0.1, 1, 1000000):
-        means.append(np.trace(np.where((Dij-i)>0,1,0)))
-        
-        plt.scatter(np.linspace(0.1, 1, 1000000),means)
-        
-        plt.hist(means,bins=50)
-
-    
+#Rij,Dij=im.compute()  
+#
+#    means=[]
+#    for i in np.linspace(0.1, 1, 1000000):
+#        means.append(np.trace(np.where((Dij-i)>0,1,0)))
+#        
+#        plt.scatter(np.linspace(0.1, 1, 1000000),means)
+#        
+#        plt.hist(means,bins=50)
+#
+#    
 
         
         
