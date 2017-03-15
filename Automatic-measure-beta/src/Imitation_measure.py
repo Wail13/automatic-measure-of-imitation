@@ -286,11 +286,20 @@ class Imitation:
     
     
 
-im=Imitation("boxing02","boxing02",256,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=0.4)
+im=Imitation("boxing3","walk-simple",256,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=0.4)
 Rij,Dij=im.compute()  
-     
+
+    means=[]
+    for i in np.linspace(0.1, 1, 1000000):
+        means.append(np.trace(np.where((Dij-i)>0,1,0)))
         
-def         
+        plt.scatter(np.linspace(0.1, 1, 1000000),means)
+        
+        plt.hist(means,bins=50)
+
+    
+
+        
         
         
         
