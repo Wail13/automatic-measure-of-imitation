@@ -29,6 +29,7 @@ class Imitation:
      # The folders where the STIP are stored for each video  
     pathout1="\\Automatic-measure-beta\\Data\\vid-gen1\\"
     pathout2="\\Automatic-measure-beta\\Data\\vid-gen2\\"
+   
 
 
 #    
@@ -59,7 +60,9 @@ class Imitation:
         self.threshold=threshold
         
         
+        
     def compute(self):
+        t0 = time()
         data1,data2,hoghof=self.load_process_data()
         
       
@@ -78,17 +81,15 @@ class Imitation:
         
         print("########### recurrence matrix is:   ################ ")
         
+        t = time()
+        
+        print("Execution time is: "+str(t-t0))
         
         return self.recurrence_matrix(h1,h2,self.threshold)
         
        
         
 
-       
-       
-        
-
-            
         
             
         
@@ -196,8 +197,17 @@ class Imitation:
     
     
     def recurrence_matrix(self,h1,h2,threshold):
+        """
+        input:
+            -h1,h2 histograms 
+        output:
+            -Rij:Recurrence matrix
+            -Dij:Raw Recurrence matrix (before applying the threshold)
+        """
         sab1,sab2=self.SAB(h1,h2)
         Rij=np.zeros((h1.shape[0],h2.shape[0]))
+        Dij=np.zeros((h1.shape[0],h2.shape[0]))
+
         print((h1.shape[0],h2.shape[0]))
         print(sab1.shape)
         print(sab2.shape)
@@ -206,11 +216,15 @@ class Imitation:
             for j in range(h2.shape[0]):
                 print((sab1[j]+sab2[i])-threshold)
                 Rij[i][j]=np.where( (sab1[j]+sab2[i])-threshold >0, 1, 0 )
+                Dij[i][j]= (sab1[j]+sab2[i])
+
+                
+                
 #                Rij[i][j]=np.where( (threshold-np.abs((sab1[j]+sab2[i]))) >0, 1, 0 )
             
         print(np.mean(Rij))
     
-        return Rij
+        return Rij,Dij
 
 
 
@@ -272,11 +286,11 @@ class Imitation:
     
     
 
-im=Imitation("boxing3","walk-simple",256,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=0.27)
-im.compute()      
+im=Imitation("boxing02","boxing02",256,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=0.4)
+Rij,Dij=im.compute()  
      
         
-        
+def         
         
         
         
