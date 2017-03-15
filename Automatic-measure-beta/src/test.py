@@ -26,15 +26,15 @@ column=["hgf"+str(i) for i in range(162)]
 column.insert(0,'frame')
 
 #reading txt fi=pd.read_csv('../Data/vid-gen1/walk-complex.txt',header=None, sep=r"\s+")
-data1=pd.read_csv('../Data/vid-gen1/walk-complex.txt',header=None, sep=r"\s+")
-data2=pd.read_csv('../Data/vid-gen2/walk-simple.txt',header=None, sep=r"\s+")
+data1=pd.read_csv('C:/Wail/automatic-measure-of-imitation/Automatic-measure-beta/Data/vid-gen2/boxing03.txt',header=None, sep=r"\s+",skiprows=3)
+data2=pd.read_csv('C:/Wail/automatic-measure-of-imitation/Automatic-measure-beta/Data/vid-gen1/boxing02.txt',header=None, sep=r"\s+",skiprows=3)
 
 
 
 
 #droping useless columns
-data1.drop(data1.columns[[0,1,2,3,5,6]], axis=1, inplace=True)
-data2.drop(data2.columns[[0,1,2,3,5,6]], axis=1, inplace=True)
+data1.drop(data1.columns[[0,1,2,4,5,6]], axis=1, inplace=True)
+data2.drop(data2.columns[[0,1,2,4,5,6]], axis=1, inplace=True)
 
 
 #naming the columns
@@ -53,7 +53,7 @@ hoghof_scaled = preprocessing.scale(datapca)
 #dataframe to numpy without scaling to be usable in sklearn
 hoghof=datapca.as_matrix(columns=None)
 
-
+applypca(hoghof_scaled)
 ################################PCA dimension reduction#############################################
 #applying pca to reduce dimension
 def applypca(data,ncp=None):
@@ -69,9 +69,12 @@ def applypca(data,ncp=None):
             var= sum(expvar[:i])
             ncomponent=i
             break
-        
+    
+    print(ncomponent)    
+    
     if ncp:
         ncomponent=ncp
+        
         
     
     return X[:,0:ncomponent],ncomponent
@@ -119,8 +122,8 @@ kmean.get_params()
      return train
          
  #104 is ncomponent and 256 is ncluster K
- h2=histograms(data2,104,256)
- h1=histograms(data1,104,256)     
+ h2=histograms(data2,89,256)
+ h1=histograms(data1,89,256)     
      
     
     
@@ -152,7 +155,7 @@ def SAB(h1,h2,i,j):
     Sab2=svm2.decision_function(h1)
     return Sab1[i]+Sab2[j]
 
-
+dec=svm1.predict(h1)
 SAB(h1,h2,4,4)
 
 def recurrence_matrix(h1,h2,threshold,i,j):
@@ -160,17 +163,41 @@ def recurrence_matrix(h1,h2,threshold,i,j):
     return np.where(threshold-SAB(h1,h2,i,j) > 0 ,1, 0)
     
     
-onesvm = svm.OneClassSVM( kernel=my_kernel)
-onesvm.fit(data1)
-onesvm.intercept_
-onesvm.
+onesvm = svm.OneClassSVM( kernel=my_kernel, nu=0.1)
+onesvm.fit(h2)
+dec=onesvm.decision_function(h2)-onesvm.intercept_
+dec2=onesvm.decision_function(h1)-onesvm.intercept_
+print(sum(dec))
+print(sum(dec2))
+print(np.mean(dec>=0))
+print(onesvm.intercept_)
 
 
 
-    
+def cv_optimize(clf, parameters, X, n_jobs=1, n_folds=5, score_func=None):
+    if score_func:
+        gs = GridSearchCV(clf, param_grid=parameters, cv=n_folds, n_jobs=n_jobs, scoring=score_func)
+    else:
+        
+    gs.fit(X)
+    print "BEST", gs.best_params_, gs.best_score_, gs.grid_scores_
+    best = gs.best_estimator_
+    return best
 
 
-    
+
+
+
+onesvm=svm.OneClassSVM( kernel='precomputed')
+nu_param=np.linspace(0.001, 1, 200)
+yh2=np.ones(h2.shape[0])
+yh1=np.ones(h1.shape[0])
+
+parameters=dict(nu=nu_param)
+gs = GridSearchCV(onesvm, param_grid=parameters, n_jobs=1, cv=10,scoring='f1') 
+precomputedK=my_kernel(h2,h2)
+gs.fit(precomputedK,yh2)
+prr=gs.best_params_   
     
 
     

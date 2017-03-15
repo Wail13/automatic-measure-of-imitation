@@ -173,7 +173,7 @@ class Imitation:
     
     def OneSVM_predict(self,h,my_kernel):
         t0 = time()
-        onesvm = svm.OneClassSVM( kernel=my_kernel)
+        onesvm = svm.OneClassSVM( kernel=my_kernel,nu=0.1)
         onesvm.fit(h)
         t=time()
         print("training time for svm----------: "+str(t-t0))
@@ -189,8 +189,8 @@ class Imitation:
 ##
 #        Sab1=svm1.decision_function(h2)
 #        Sab2=svm2.decision_function(h1)
-        Sab1=svm1.decision_function(h2)+svm1.intercept_
-        Sab2=svm2.decision_function(h1)+svm2.intercept_
+        Sab1=svm1.decision_function(h2)-svm1.intercept_
+        Sab2=svm2.decision_function(h1)-svm2.intercept_
         return Sab1,Sab2
     
     
@@ -272,7 +272,7 @@ class Imitation:
     
     
 
-im=Imitation("boxing02","boxing02",256,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=0)
+im=Imitation("boxing3","walk-simple",256,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=0.27)
 im.compute()      
      
         
