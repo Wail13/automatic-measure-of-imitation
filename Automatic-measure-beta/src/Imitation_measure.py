@@ -178,8 +178,13 @@ class Imitation:
         print("intercept 1---"+str(svm1.intercept_))
         print("intercept 2---"+str(svm2.intercept_))
         
-        Sab1=svm1.decision_function(h2)-svm1.intercept_
-        Sab2=svm2.decision_function(h1)-svm2.intercept_
+        #Histograms have different size
+        
+        h1perc=float(h1.shape[0])/float((h1.shape[0]+h2.shape[0]))
+        h2perc=1-h1perc
+        
+        Sab1=(svm1.decision_function(h2)-svm1.intercept_)*h1perc
+        Sab2=(svm2.decision_function(h1)-svm2.intercept_)*h2perc
         return Sab1,Sab2
     
     
@@ -247,6 +252,10 @@ class Imitation:
         #naming the columns
         data1.columns=column
         data2.columns=column
+        
+        # Working in the same frame range
+        data1=data1[(data1.frame>=max(min(data1.frame),min(data2.frame))) & (data1.frame<=min(max(data1.frame),max(data2.frame)))]
+        data2=data2[(data2.frame>=max(min(data1.frame),min(data2.frame))) & (data2.frame<=min(max(data1.frame),max(data2.frame)))]
         
         #merging the two dataframes
         data=data1.append(data2,ignore_index=True)

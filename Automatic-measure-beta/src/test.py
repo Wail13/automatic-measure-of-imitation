@@ -4,6 +4,7 @@ Created on Wed Mar 08 15:39:59 2017
 
 @author: isir
 """
+
 from sklearn.decomposition import PCA
 from sklearn import svm
 import matplotlib.pyplot as plt
@@ -26,7 +27,7 @@ column=["hgf"+str(i) for i in range(162)]
 column.insert(0,'frame')
 
 #reading txt fi=pd.read_csv('../Data/vid-gen1/walk-complex.txt',header=None, sep=r"\s+")
-data1=pd.read_csv('C:/Wail/automatic-measure-of-imitation/Automatic-measure-beta/Data/vid-gen2/boxing03.txt',header=None, sep=r"\s+",skiprows=3)
+data1=pd.read_csv('C:/Wail/automatic-measure-of-imitation/Automatic-measure-beta/Data/vid-gen2/boxing02.txt',header=None, sep=r"\s+",skiprows=3)
 data2=pd.read_csv('C:/Wail/automatic-measure-of-imitation/Automatic-measure-beta/Data/vid-gen1/boxing02.txt',header=None, sep=r"\s+",skiprows=3)
 
 
@@ -41,9 +42,16 @@ data2.drop(data2.columns[[0,1,2,4,5,6]], axis=1, inplace=True)
 data1.columns=column
 data2.columns=column
 
+
+
+data1=data1[(data1.frame>=max(min(data1.frame),min(data2.frame))) & (data1.frame<=min(max(data1.frame),max(data2.frame)))]
+data2=data2[(data2.frame>=max(min(data1.frame),min(data2.frame))) & (data2.frame<=min(max(data1.frame),max(data2.frame)))]
+
+
 #merging the two dataframes
 data=data1.append(data2,ignore_index=True)
 datapca=data.drop(['frame'],axis=1)
+
 
 
 # scaling zero mean and unit variance or maybe add normalization
@@ -53,7 +61,6 @@ hoghof_scaled = preprocessing.scale(datapca)
 #dataframe to numpy without scaling to be usable in sklearn
 hoghof=datapca.as_matrix(columns=None)
 
-applypca(hoghof_scaled)
 ################################PCA dimension reduction#############################################
 #applying pca to reduce dimension
 def applypca(data,ncp=None):
@@ -80,7 +87,7 @@ def applypca(data,ncp=None):
     return X[:,0:ncomponent],ncomponent
     
 
-    hoghofPCA,ncomponent=applypca(hoghof_scaled)
+hoghofPCA,ncomponent=applypca(hoghof_scaled)
 ###############################Kmeans & code#######################################################################
 
 #given by user vocabulary size and also class var
@@ -116,14 +123,14 @@ kmean.get_params()
      train=np.zeros((len(gbp),K))
      for name,group in gbp:
          train[i][group.pred.values]=1
-         print(train[i])
+         #print(train[i])
          i+=1
          
      return train
          
  #104 is ncomponent and 256 is ncluster K
- h2=histograms(data2,89,256)
- h1=histograms(data1,89,256)     
+ h2=histograms(data2,85,256)
+ h1=histograms(data1,85,256)     
      
     
     
@@ -161,16 +168,25 @@ SAB(h1,h2,4,4)
 def recurrence_matrix(h1,h2,threshold,i,j):
     
     return np.where(threshold-SAB(h1,h2,i,j) > 0 ,1, 0)
+
+h1perc=float(h1.shape[0])/float((h1.shape[0]+h2.shape[0]))
+h2perc=1-h1perc
     
     
 onesvm = svm.OneClassSVM( kernel=my_kernel, nu=0.1)
 onesvm.fit(h1)
-dec=onesvm.decision_function(h2)-onesvm.intercept_
-dec2=onesvm.decision_function(h1)-onesvm.intercept_
+dec=(onesvm.decision_function(h2)-onesvm.intercept_)*h1perc
+dec2=(onesvm.decision_function(h1)-onesvm.intercept_)*h1perc
 print(sum(dec))
 print(sum(dec2))
-print(np.mean(dec>=0))
-print(onesvm.intercept_)
+
+
+onesvm = svm.OneClassSVM( kernel=my_kernel, nu=0.1)
+onesvm.fit(h2)
+dec=(onesvm.decision_function(h2)-onesvm.intercept_)*h2perc
+dec2=(onesvm.decision_function(h1)-onesvm.intercept_)*h2perc
+print(sum(dec))
+print(sum(dec2))
 
 
 
