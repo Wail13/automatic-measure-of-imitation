@@ -208,10 +208,10 @@ class ImitationM:
         return data1,data2,data
     
     
- 
-    
-#
-im=ImitationM("18_10","19_10",150,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=5)
+# 
+#    
+##
+im=ImitationM("boxing02","boxing02",350,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=0.00000001)
 Rij,Dij=im.compute()  
 plt.imshow(Rij)
 
