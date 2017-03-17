@@ -277,7 +277,7 @@ class Imitation:
     
 #    
 
-im=Imitation("boxing01","boxing01",50,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=0.1)
+im=Imitation("wave1","wave2",10,'C:\\Wail\\automatic-measure-of-imitation',skip=0,threshold=0.1)
 Rij,Dij=im.compute()  
 plt.imshow(Rij)
 

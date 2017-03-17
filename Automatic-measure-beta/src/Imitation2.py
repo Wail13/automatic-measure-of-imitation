@@ -64,25 +64,10 @@ class ImitationM:
     def compute(self):
         
         data1,data2,hoghof=self.load_process_data()
-        
-                  
         kmean=self.k_means_predict(hoghof,self.K)
         h2=self.histograms(data2,self.K,kmean)
-        #print("########### h2 #########################")
-        #print(h2)
-        #print("########## done h2 ###################")
-        
-        #print("########### h1 #########################")
         h1=self.histograms(data1,self.K,kmean)
-        #print(h1)
-        #print("########## done h1 ###################")
-        
-        #print("########### recurrence matrix is:   ################ ")
-        
-#        print("h1 and h2 shape #########################")
-#        print(h1.shape[0])
-#        print(h2.shape[0])
-        
+            
         return self.recurrence_matrix(h1,h2,self.threshold)
         
        
@@ -164,18 +149,12 @@ class ImitationM:
         sab1,sab2=self.SAB(h1,h2)
         Rij=np.zeros((h1.shape[0],h2.shape[0]))
         Dij=np.zeros((h1.shape[0],h2.shape[0]))
-
-#        print((h1.shape[0],h2.shape[0]))
-#        print(sab1.shape)
-#        print(sab2.shape)
-        
+      
         for i in range(h1.shape[0]):
             for j in range(h2.shape[0]):
-                #print((sab1[j]-sab2[i])-threshold)
                 Rij[i][j]=np.where(np.abs(sab1[j]-sab2[i])-threshold <0, 1, 0 )
                 Dij[i][j]= np.abs(sab1[j]-sab2[i])
                 
-#        print(np.mean(Rij))
     
         return Rij,Dij
 
@@ -198,8 +177,8 @@ class ImitationM:
 
         # Generate a file .txt that contains STIP points  
         if self.skip!=1:
-            os.system(self.projectPath+Imitation.pathSTIP+" -f "+self.projectPath+pathVid1+" -o "+self.projectPath+Imitation.pathout1+self.vid1Name+".txt -vis no")
-            os.system(self.projectPath+Imitation.pathSTIP+" -f "+self.projectPath+pathVid2+" -o "+self.projectPath+Imitation.pathout2+ self.vid2Name+".txt -vis no")
+            os.system(self.projectPath+ImitationM.pathSTIP+" -f "+self.projectPath+pathVid1+" -o "+self.projectPath+ImitationM.pathout1+self.vid1Name+".txt -vis no")
+            os.system(self.projectPath+ImitationM.pathSTIP+" -f "+self.projectPath+pathVid2+" -o "+self.projectPath+ImitationM.pathout2+ self.vid2Name+".txt -vis no")
             
         
         #loading the STIP into a panda dataframe
@@ -225,17 +204,14 @@ class ImitationM:
         data=data1.append(data2,ignore_index=True)
         data=data.drop(['frame'],axis=1)
 #        data=preprocessing.scale(data)
-            
-#        print("############ loading data completed ###########################")
-#        print(data)
-            
+                        
         return data1,data2,data
     
     
  
     
-
-im=ImitationM("walk-complex","walk-simple",50,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=73)
+#
+im=ImitationM("18_10","19_10",150,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=5)
 Rij,Dij=im.compute()  
 plt.imshow(Rij)
 
