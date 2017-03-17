@@ -235,9 +235,9 @@ class ImitationM:
  
     
 
-#im=ImitationM("walk-complex","walk-complex",500,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=2)
-#Rij,Dij=im.compute()  
-#plt.imshow(Rij)
+im=ImitationM("walk-complex","walk-simple",50,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=73)
+Rij,Dij=im.compute()  
+plt.imshow(Rij)
 
 
 #np.trace(Rij)
