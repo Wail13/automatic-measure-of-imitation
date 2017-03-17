@@ -6,7 +6,7 @@ Created on Mon Mar 13 17:04:13 2017
 """
 
     
-class Imitation:
+class ImitationM:
     
     from sklearn.decomposition import PCA
     from sklearn import svm
@@ -65,61 +65,30 @@ class Imitation:
         
         data1,data2,hoghof=self.load_process_data()
         
-      
-        hoghof,ncomponent=self.applypca(hoghof)
-            
+                  
         kmean=self.k_means_predict(hoghof,self.K)
-        h2=self.histograms(data2,ncomponent,self.K,kmean)
-        print("########### h2 #########################")
-        print(h2)
-        print("########## done h2 ###################")
+        h2=self.histograms(data2,self.K,kmean)
+        #print("########### h2 #########################")
+        #print(h2)
+        #print("########## done h2 ###################")
         
-        print("########### h1 #########################")
-        h1=self.histograms(data1,ncomponent,self.K,kmean)
-        print(h1)
-        print("########## done h1 ###################")
+        #print("########### h1 #########################")
+        h1=self.histograms(data1,self.K,kmean)
+        #print(h1)
+        #print("########## done h1 ###################")
         
-        print("########### recurrence matrix is:   ################ ")
+        #print("########### recurrence matrix is:   ################ ")
         
-        print("h1 and h2 shape #########################")
-        print(h1.shape[0])
-        print(h2.shape[0])
+#        print("h1 and h2 shape #########################")
+#        print(h1.shape[0])
+#        print(h2.shape[0])
         
         return self.recurrence_matrix(h1,h2,self.threshold)
         
        
-        
-    def applypca(self,data,ncp=None):
-        """
-        input:
-            -data: hoghof descriptors
-        output:
-            - principal component with variance 99%
-        description: Dimension reduction with 99% of variance  
-        """
-        pca = PCA(n_components=162)
-        X = pca.fit_transform(data)
-
-        expvar=pca.explained_variance_ratio_*100
-
-
-        for i in range(len(expvar)+1):
-            if sum(expvar[:i]) > 99:
-                var= sum(expvar[:i])
-                ncomponent=i
-                break
-        
-        if ncp:
-            ncomponent=ncp
-            
-        print("######## Done applying PCA###############")
-        print("Number of pc is:  "+str(ncomponent))
-        
-    
-        return X[:,0:ncomponent],ncomponent 
     
     
-    def histograms(self,data,ncomponent,K,kmean):
+    def histograms(self,data,K,kmean):
         """
         -input:
             -data: hoghof descriptor
@@ -128,7 +97,7 @@ class Imitation:
         """
         i=0
         gbp=data
-        predclust=kmean.predict(self.applypca(preprocessing.scale((data.drop(['frame'],axis=1))),ncomponent)[0])
+        predclust=kmean.predict(preprocessing.scale(data.drop(['frame'],axis=1)))
         gbp['pred']=predclust
         gbp=gbp.groupby('frame')
         train=np.zeros((len(gbp),K))
@@ -137,7 +106,7 @@ class Imitation:
            #print(train[i])
            i+=1
            
-        print("######### Generating histograms ###############")
+#        print("######### Generating histograms ###############")
          
         return train
     
@@ -166,10 +135,10 @@ class Imitation:
     
     def OneSVM_predict(self,h,my_kernel):
         t0 = time()
-        onesvm = svm.OneClassSVM( kernel=my_kernel,nu=0.5)
+        onesvm = svm.OneClassSVM( kernel=my_kernel,nu=0.999)
         onesvm.fit(h)
         t=time()
-        print("training time for svm----------: "+str(t-t0))
+#        print("training time for svm----------: "+str(t-t0))
         return onesvm
     
     
@@ -177,9 +146,6 @@ class Imitation:
     def SAB(self,h1,h2):
         svm1=self.OneSVM_predict(h1,self.my_kernel)
         svm2=self.OneSVM_predict(h2,self.my_kernel)
-        print("intercept 1---"+str(svm1.intercept_))
-        print("intercept 2---"+str(svm2.intercept_))
-        
         Sab1=(svm1.decision_function(h2)-svm1.intercept_)
         Sab2=(svm2.decision_function(h1)-svm1.intercept_)
 
@@ -199,17 +165,17 @@ class Imitation:
         Rij=np.zeros((h1.shape[0],h2.shape[0]))
         Dij=np.zeros((h1.shape[0],h2.shape[0]))
 
-        print((h1.shape[0],h2.shape[0]))
-        print(sab1.shape)
-        print(sab2.shape)
+#        print((h1.shape[0],h2.shape[0]))
+#        print(sab1.shape)
+#        print(sab2.shape)
         
         for i in range(h1.shape[0]):
             for j in range(h2.shape[0]):
-                #print((sab1[j]+sab2[i])-threshold)
+                #print((sab1[j]-sab2[i])-threshold)
                 Rij[i][j]=np.where(np.abs(sab1[j]-sab2[i])-threshold <0, 1, 0 )
-                Dij[i][j]= (sab1[j]-sab2[i])
+                Dij[i][j]= np.abs(sab1[j]-sab2[i])
                 
-        print(np.mean(Rij))
+#        print(np.mean(Rij))
     
         return Rij,Dij
 
@@ -224,7 +190,7 @@ class Imitation:
             -hoghof: descriptor of both videos. We used a combination of  histogram of gradients and histogram of flow 
         """
         
-        print("################ loading data ######################")
+#        print("################ loading data ######################")
         
         pathVid1="\\Automatic-measure-beta\\Data\\"+self.vid1Name+".avi"
         pathVid2="\\Automatic-measure-beta\\Data\\"+self.vid2Name+".avi"
@@ -257,31 +223,21 @@ class Imitation:
         
         #merging the two dataframes
         data=data1.append(data2,ignore_index=True)
-        datapca=data.drop(['frame'],axis=1)
-        
-        if self.scale==1:
-            hoghof = preprocessing.scale(datapca)
+        data=data.drop(['frame'],axis=1)
+#        data=preprocessing.scale(data)
             
-        else:
-            #dataframe to numpy without scaling to be usable in sklearn
-            hoghof=datapca.as_matrix(columns=None)
+#        print("############ loading data completed ###########################")
+#        print(data)
             
-        print("############ loading data completed ###########################")
-        print(hoghof)
-            
-        return data1,data2,hoghof
+        return data1,data2,data
     
     
  
     
-    
-#    
 
-im=Imitation("walk-simple","walk-complex",50,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=40)
-Rij,Dij=im.compute()  
-plt.imshow(Rij)
-
-plt.imshow(Dij)
+#im=ImitationM("walk-complex","walk-complex",500,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=2)
+#Rij,Dij=im.compute()  
+#plt.imshow(Rij)
 
 
 #np.trace(Rij)

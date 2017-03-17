@@ -27,7 +27,7 @@ column=["hgf"+str(i) for i in range(162)]
 column.insert(0,'frame')
 
 #reading txt fi=pd.read_csv('../Data/vid-gen1/walk-complex.txt',header=None, sep=r"\s+")
-data1=pd.read_csv('C:/Wail/automatic-measure-of-imitation/Automatic-measure-beta/Data/vid-gen2/boxing02.txt',header=None, sep=r"\s+",skiprows=3)
+data1=pd.read_csv('C:/Wail/automatic-measure-of-imitation/Automatic-measure-beta/Data/vid-gen2/boxing03.txt',header=None, sep=r"\s+",skiprows=3)
 data2=pd.read_csv('C:/Wail/automatic-measure-of-imitation/Automatic-measure-beta/Data/vid-gen1/boxing02.txt',header=None, sep=r"\s+",skiprows=3)
 
 
@@ -44,19 +44,24 @@ data2.columns=column
 
 
 
-data1=data1[(data1.frame>=max(min(data1.frame),min(data2.frame))) & (data1.frame<=min(max(data1.frame),max(data2.frame)))]
-data2=data2[(data2.frame>=max(min(data1.frame),min(data2.frame))) & (data2.frame<=min(max(data1.frame),max(data2.frame)))]
+data10=data1[(data1.frame>=max(min(data1.frame),min(data2.frame))) & (data1.frame<=min(max(data1.frame),max(data2.frame)))]
+data20=data2[(data2.frame>=max(min(data1.frame),min(data2.frame))) & (data2.frame<=min(max(data1.frame),max(data2.frame)))]
 
 
 #merging the two dataframes
 data=data1.append(data2,ignore_index=True)
 datapca=data.drop(['frame'],axis=1)
 
+data0=data10.append(data20,ignore_index=True)
+datapca0=data0.drop(['frame'],axis=1)
+
 
 
 # scaling zero mean and unit variance or maybe add normalization
 # in numpy 
 hoghof_scaled = preprocessing.scale(datapca)
+hoghof_scaled0 = preprocessing.scale(datapca0)
+
 
 #dataframe to numpy without scaling to be usable in sklearn
 hoghof=datapca.as_matrix(columns=None)
@@ -88,6 +93,8 @@ def applypca(data,ncp=None):
     
 
 hoghofPCA,ncomponent=applypca(hoghof_scaled)
+hoghofPCA0,ncomponent0=applypca(hoghof_scaled0)
+
 ###############################Kmeans & code#######################################################################
 
 #given by user vocabulary size and also class var
@@ -106,6 +113,8 @@ def k_means_predict(data,K,ini='k-means++'):
     
 # class var 
 kmean=k_means_predict(hoghofPCA,256)
+kmean0=k_means_predict(hoghofPCA0,256)
+
   
 kmean.get_params()  
   
