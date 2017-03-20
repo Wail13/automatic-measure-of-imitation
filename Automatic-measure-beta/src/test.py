@@ -27,8 +27,8 @@ column=["hgf"+str(i) for i in range(162)]
 column.insert(0,'frame')
 
 #reading txt fi=pd.read_csv('../Data/vid-gen1/walk-complex.txt',header=None, sep=r"\s+")
-data1=pd.read_csv('C:/Wail/automatic-measure-of-imitation/Automatic-measure-beta/Data/vid-gen2/boxing03.txt',header=None, sep=r"\s+",skiprows=3)
-data2=pd.read_csv('C:/Wail/automatic-measure-of-imitation/Automatic-measure-beta/Data/vid-gen1/boxing02.txt',header=None, sep=r"\s+",skiprows=3)
+data1=pd.read_csv('C:/Wail/automatic-measure-of-imitation/Automatic-measure-beta/Data/vid-gen2/wave1.txt',header=None, sep=r"\s+",skiprows=3)
+data2=pd.read_csv('C:/Wail/automatic-measure-of-imitation/Automatic-measure-beta/Data/vid-gen1/wave1.txt',header=None, sep=r"\s+",skiprows=3)
 
 
 
@@ -50,7 +50,7 @@ data20=data2[(data2.frame>=max(min(data1.frame),min(data2.frame))) & (data2.fram
 
 #merging the two dataframes
 data=data1.append(data2,ignore_index=True)
-datapca=data.drop(['frame'],axis=1)
+data=data.drop(['frame'],axis=1)
 
 data0=data10.append(data20,ignore_index=True)
 datapca0=data0.drop(['frame'],axis=1)
@@ -112,7 +112,7 @@ def k_means_predict(data,K,ini='k-means++'):
 
     
 # class var 
-kmean=k_means_predict(hoghofPCA,256)
+kmean=k_means_predict(data,5)
 kmean0=k_means_predict(hoghofPCA0,256)
 
   
@@ -123,10 +123,10 @@ kmean.get_params()
   
   
  #list of non duplicated frame number 
- def histograms(data,ncomponent,K):
+ def histograms(data,K):
      i=0
      gbp=data
-     predclust=kmean.predict(applypca(preprocessing.scale((data.drop(['frame'],axis=1))),ncomponent)[0])
+     predclust=kmean.predict(preprocessing.scale((data.drop(['frame'],axis=1))))
      gbp['pred']=predclust
      gbp=gbp.groupby('frame')
      train=np.zeros((len(gbp),K))
@@ -138,8 +138,8 @@ kmean.get_params()
      return train
          
  #104 is ncomponent and 256 is ncluster K
- h2=histograms(data2,85,256)
- h1=histograms(data1,85,256)     
+ h2=histograms(data2,5)
+ h1=histograms(data1,5)     
      
     
     
@@ -182,8 +182,38 @@ h1perc=float(h1.shape[0])/float((h1.shape[0]+h2.shape[0]))
 h2perc=1-h1perc
     
     
-onesvm = svm.OneClassSVM( kernel=my_kernel, nu=0.1)
-onesvm.fit(h1)
+onesvm = svm.OneClassSVM( kernel=my_kernel, nu=0.00300)
+onesvm.fit(h2)
+np.mean(onesvm.predict(h2)==1)
+
+
+from sklearn.cross_validation import KFold
+it=np.linspace(0.001, 1, 1000)
+
+it[999]
+
+def Cross_validation(h):
+    n_folds=4
+    nu=np.linspace(0.001, 1, 1000)
+    results=[]
+    for d in nu:
+        onesvm = svm.OneClassSVM( kernel=my_kernel, nu=d)
+        hypothesisresults=[]
+        for train, test in KFold(16, n_folds):
+            onesvm.fit(h[train]) # fit
+            hypothesisresults.append(np.mean(onesvm.predict(h[test])==1))
+            
+        results.append(np.mean(hypothesisresults))
+        #print(results)
+        
+        
+    return nu[np.argmax(results)]
+    
+ len(h2)   
+
+Cross_validation(h2)
+
+
 dec=(onesvm.decision_function(h2)-onesvm.intercept_)*h1perc
 dec2=(onesvm.decision_function(h1)-onesvm.intercept_)*h1perc
 print(sum(dec))

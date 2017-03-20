@@ -8,13 +8,11 @@ Created on Mon Mar 13 17:04:13 2017
     
 class ImitationM:
     
-    from sklearn.decomposition import PCA
     from sklearn import svm
     import matplotlib.pyplot as plt
+    from sklearn.cross_validation import KFold
     from sklearn.cluster import KMeans
-    from multiprocessing import Pool
     from sklearn import preprocessing
-    from sklearn.model_selection import GridSearchCV
     from sklearn import metrics
     from time import time
     import numpy as np 
@@ -37,7 +35,7 @@ class ImitationM:
 #    im.compute()
 #    
     
-    def __init__(self,vid1Name,vid2Name,K,projectPath,windowsize=1,skip=1,scale=1,pca=1,threshold=0.1):
+    def __init__(self,vid1Name,vid2Name,K,projectPath,skip=1,scale=1,threshold=0.1):
         """
         -init:
             vid1Name: the name of the video located in the Data folder
@@ -52,11 +50,9 @@ class ImitationM:
         self.vid1Name=vid1Name
         self.vid2Name=vid2Name
         self.K=K
-        self.windowsize=windowsize
         self.projectPath=projectPath
         self.skip=skip
         self.scale=scale
-        self.pca=pca
         self.threshold=threshold
         
         
@@ -72,7 +68,24 @@ class ImitationM:
         
        
     
-    
+    def Cross_validation(self,h):
+        n_folds=4
+        nu=np.linspace(0.001, 1, 1000)
+        results=[]
+        for d in nu:
+            onesvm = svm.OneClassSVM( kernel=self.my_kernel, nu=d)
+            hypothesisresults=[]
+            for train, test in KFold(len(h)-1, n_folds):
+                onesvm.fit(h[train]) # fit
+                hypothesisresults.append(np.mean(onesvm.predict(h[test])==1))
+            
+        results.append(np.mean(hypothesisresults))
+        
+        
+        return nu[np.argmax(results)]
+
+
+
     def histograms(self,data,K,kmean):
         """
         -input:
@@ -120,7 +133,7 @@ class ImitationM:
     
     def OneSVM_predict(self,h,my_kernel):
         t0 = time()
-        onesvm = svm.OneClassSVM( kernel=my_kernel,nu=0.999)
+        onesvm = svm.OneClassSVM( kernel=my_kernel,nu=self.Cross_validation(h))
         onesvm.fit(h)
         t=time()
 #        print("training time for svm----------: "+str(t-t0))
@@ -208,25 +221,17 @@ class ImitationM:
         return data1,data2,data
     
     
-# 
-#    
-##
-im=ImitationM("boxing02","boxing02",350,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=0.00000001)
+
+    
+
+im=ImitationM("wave2","wave1",10,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=0.003)
 Rij,Dij=im.compute()  
 plt.imshow(Rij)
 
 
-#np.trace(Rij)
-#
-#    means=[]
-#    for i in np.linspace(0.1, 1, 1000000):
-#        means.append(np.trace(np.where((Dij-i)>0,1,0)))
-#        
-#        plt.scatter(np.linspace(0.1, 1, 1000000),means)
-#        
-#        plt.hist(means,bins=50)
-#
-#    
+
+
+  
 
         
         
