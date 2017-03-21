@@ -238,3 +238,4 @@ ax
 
 ax=sns.heatmap(np.where(Dij-0.09 <0, 1, 0 ) )
 
+plt.rcParams.update(plt.rcParamsDefault)
