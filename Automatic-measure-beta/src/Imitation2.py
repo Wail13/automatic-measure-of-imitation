@@ -65,24 +65,27 @@ class ImitationM:
         h1=self.histograms(data1,self.K,kmean)
             
         return self.recurrence_matrix(h1,h2,self.threshold)
-        
-       
+    
+    
     
     def Cross_validation(self,h):
-        n_folds=4
-        nu=np.linspace(0.001, 1, 1000)
-        results=[]
-        for d in nu:
-            onesvm = svm.OneClassSVM( kernel=self.my_kernel, nu=d)
-            hypothesisresults=[]
-            for train, test in KFold(len(h)-1, n_folds):
-                onesvm.fit(h[train]) # fit
-                hypothesisresults.append(np.mean(onesvm.predict(h[test])==1))
+     n_folds=4
+     nu=np.linspace(0.001, 1, 1000)
+     results=[]
+     for d in nu:
+         onesvm = svm.OneClassSVM( kernel=my_kernel, nu=d)
+         hypothesisresults=[]
+         for train, test in KFold(len(h), n_folds):
+             onesvm.fit(h[train]) # fit
+             hypothesisresults.append(np.mean(onesvm.predict(h[test])==1))
             
-        results.append(np.mean(hypothesisresults))
+         results.append(np.mean(hypothesisresults))
+        #print(results)
         
         
-        return nu[np.argmax(results)]
+     return nu[np.argmax(results)]
+        
+   
 
 
 
@@ -133,7 +136,9 @@ class ImitationM:
     
     def OneSVM_predict(self,h,my_kernel):
         t0 = time()
-        onesvm = svm.OneClassSVM( kernel=my_kernel,nu=self.Cross_validation(h))
+        nuu=self.Cross_validation(h)
+        print('nu coeficient is:    '+str(nuu))
+        onesvm = svm.OneClassSVM( kernel=my_kernel,nu=nuu)
         onesvm.fit(h)
         t=time()
 #        print("training time for svm----------: "+str(t-t0))
@@ -165,8 +170,8 @@ class ImitationM:
       
         for i in range(h1.shape[0]):
             for j in range(h2.shape[0]):
-                Rij[i][j]=np.where(np.abs(sab1[j]-sab2[i])-threshold <0, 1, 0 )
-                Dij[i][j]= np.abs(sab1[j]-sab2[i])
+                Rij[i][j]=np.where(np.square(sab1[j]-sab2[i])-threshold <0, 1, 0 )
+                Dij[i][j]= np.square(sab1[j]-sab2[i])
                 
     
         return Rij,Dij
@@ -222,24 +227,14 @@ class ImitationM:
     
     
 
-    
 
-im=ImitationM("wave2","wave1",10,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=0.003)
+#
+#
+im=ImitationM("walk-complex","walk-complex",7,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=0.0000000000001)
 Rij,Dij=im.compute()  
-plt.imshow(Rij)
+ax=sns.heatmap(Rij, xticklabels=2, yticklabels=False)
+ax.invert_yaxis()
+ax
 
+ax=sns.heatmap(np.where(Dij-0.09 <0, 1, 0 ) )
 
-
-
-  
-
-        
-        
-        
-        
-        
-        
-        
-        
-        
-    

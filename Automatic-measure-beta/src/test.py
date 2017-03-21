@@ -199,7 +199,7 @@ def Cross_validation(h):
     for d in nu:
         onesvm = svm.OneClassSVM( kernel=my_kernel, nu=d)
         hypothesisresults=[]
-        for train, test in KFold(16, n_folds):
+        for train, test in KFold(len(h), n_folds):
             onesvm.fit(h[train]) # fit
             hypothesisresults.append(np.mean(onesvm.predict(h[test])==1))
             
@@ -211,7 +211,7 @@ def Cross_validation(h):
     
  len(h2)   
 
-Cross_validation(h2)
+Cross_validation(h1)
 
 
 dec=(onesvm.decision_function(h2)-onesvm.intercept_)*h1perc

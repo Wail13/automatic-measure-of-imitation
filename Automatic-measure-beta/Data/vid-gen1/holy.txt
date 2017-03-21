@@ -1,0 +1,3 @@
+# STIP-format-1.0
+# source: "C:\Wail\automatic-measure-of-imitation\Automatic-measure-beta\Data\holy.avi" frame-width:512 frame-height:352 frame-offset:0
+# point-type x y t sigma2 tau2 detector-confidence dscr-hog(72) dscr-hof(90)
