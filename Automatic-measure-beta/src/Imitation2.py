@@ -73,7 +73,7 @@ class ImitationM:
      nu=np.linspace(0.001, 1, 1000)
      results=[]
      for d in nu:
-         onesvm = svm.OneClassSVM( kernel=my_kernel, nu=d)
+         onesvm = svm.OneClassSVM( kernel=self.my_kernel, nu=d)
          hypothesisresults=[]
          for train, test in KFold(len(h), n_folds):
              onesvm.fit(h[train]) # fit
@@ -225,9 +225,9 @@ class ImitationM:
                         
         return data1,data2,data
     
-    
-
-
+#    
+#
+#
 #
 #
 im=ImitationM("boxing01","boxing01",100,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=0.0000000000001)
@@ -240,7 +240,6 @@ ax.invert_yaxis()
 ax=sns.heatmap(np.where(Dij-0.09 <0, 1, 0 ) )
 
 plt.rcParams.update(plt.rcParamsDefault)
-
 
 
 def drawRecurrence(Rij,interpol='nearest'):
