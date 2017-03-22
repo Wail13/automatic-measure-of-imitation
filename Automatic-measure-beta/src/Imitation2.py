@@ -230,12 +230,30 @@ class ImitationM:
 
 #
 #
-im=ImitationM("walk-complex","walk-complex",7,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=0.0000000000001)
+im=ImitationM("boxing01","boxing01",100,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=0.0000000000001)
 Rij,Dij=im.compute()  
+drawRecurrence(Rij,interpol='nearest')
+
+
 ax=sns.heatmap(Rij, xticklabels=2, yticklabels=False)
 ax.invert_yaxis()
-ax
-
 ax=sns.heatmap(np.where(Dij-0.09 <0, 1, 0 ) )
 
 plt.rcParams.update(plt.rcParamsDefault)
+
+
+
+def drawRecurrence(Rij,interpol='nearest'):
+    x=[]
+    y=[]
+    for index, v in np.ndenumerate(Rij):
+        if v==1:
+            x.append(index[0])
+            y.append(index[1])
+        
+    H, xedges, yedges = np.histogram2d(x, y, normed=True)
+    extent = [yedges[0], yedges[-1], xedges[-1], xedges[0]]
+    plt.imshow(H, extent=extent, interpolation=interpol)
+    plt.colorbar()
+    plt.gca().invert_yaxis()
+    plt.show()
