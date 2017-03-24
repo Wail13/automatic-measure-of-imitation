@@ -230,14 +230,20 @@ class ImitationM:
 #
 #
 #
-im=ImitationM("boxing01","boxing01",100,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=0.0000000000001)
+im=ImitationM("hi","hi2",100,'C:\\Wail\\automatic-measure-of-imitation',skip=1,threshold=0.0000000000001)
 Rij,Dij=im.compute()  
-drawRecurrence(Rij,interpol='nearest')
 
+Kij=np.where(Dij-0.0000000001<0,1,0)
+drawRecurrence(Kij,interpol='nearest')
+
+
+ax=sns.heatmap(Kij, xticklabels=2, yticklabels=False)
+ax.invert_yaxis()
+ax=sns.heatmap(np.where(Dij-0.09 <0, 1, 0 ) )
 
 ax=sns.heatmap(Rij, xticklabels=2, yticklabels=False)
 ax.invert_yaxis()
-ax=sns.heatmap(np.where(Dij-0.09 <0, 1, 0 ) )
+ax=sns.heatmap(np.where(Dij-0.009 <0, 1, 0 ) )
 
 plt.rcParams.update(plt.rcParamsDefault)
 
@@ -256,3 +262,7 @@ def drawRecurrence(Rij,interpol='nearest'):
     plt.colorbar()
     plt.gca().invert_yaxis()
     plt.show()
+    
+    
+    
+
